@@ -1,11 +1,11 @@
 from model import ResNet, load_model
 from data_loader import data_loader
-from solver import ImageClassifier
+from solver import ImageClassifier, obtain_result, top_k_accuracy
 from retrival_image import *
 
 
 if __name__ == "__main__":
-  retrain = True
+  retrain = False
   if retrain:
     train_dir = "Dataset/train"
     test_dir = "Dataset/test"
@@ -23,5 +23,7 @@ if __name__ == "__main__":
     print(f"Load to the model not found {resnet_18_path}, did you already train the model?")
   retrival = RetrivalImage(model)
   query_vector, gallery_vector = get_query_vector(retrival,query_path), get_gallery_vector(retrival,gallery_path)
-  images,probabilities = getSimilarityMatrix(query_vector, gallery_vector, K=2)
-  print(images)
+  images,probabilities = getSimilarityMatrix(query_vector, gallery_vector, K=10)
+
+  res = obtain_result(images)
+  top_k_accuracy(res)

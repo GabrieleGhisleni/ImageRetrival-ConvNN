@@ -5,6 +5,7 @@ import torch.optim as optim
 import random
 import numpy as np
 from tqdm import tqdm
+import json
 
 def activate_last(model):
     for name, param in model.named_parameters():
@@ -102,3 +103,53 @@ class ImageClassifier():
                       test_accuracy.numpy(),
                       best_accuracy))
           print(f"Total error captured: {total_error}")
+
+
+
+def top_k_accuracy(result):
+  """
+  Works only if you rename the images before and are named as img (1).jpg, img (2).jpg
+  """
+  tot, top_1, top_3, top_5, top_10,no_match = len(result),0,0,0,0,0
+  for keys in result:
+    name = keys.split("(")[0].strip()
+    flag = True
+    for value in range(len(result[keys])):
+      name_v = result[keys][value].split("(")[0].strip()
+      if flag:
+        if name == name_v and value == 1:
+          top_1+=1
+          top_3+=1
+          top_5+=1
+          top_10+=1
+          flag=False
+        elif name == name_v and value > 1 and value <=3:
+          top_3+=1
+          top_5+=1
+          top_10+=1
+          flag=False
+        elif name == name_v and value > 3 and value <=5:
+          top_5+=1
+          top_10+=1
+          flag=False
+        elif name == name_v and value > 5:
+          top_10+=1
+          flag=False
+        if value == 9 and flag:
+          no_match+=1
+  print(f"""
+  top_1: {(top_1)/tot} --> top_3: {(top_3)/tot} --> top_5: {(top_5)/tot} --> top_10: {(top_10)/tot}
+  class with no matches in the list: {no_match}
+  check if top_10 is right (1- no_match/total_len) {1- (no_match/len(result))}
+  """)
+
+
+def obtain_result(dataframe, dump=False):
+  df = {}
+  for i in range(len(dataframe)):
+    df[dataframe.index[i]] = list(dataframe.iloc[i].values)
+  if dump:
+      with open('result.json', 'w') as fp:
+          json.dump(df, fp, indent=4)
+          print(f"Dumped into the result.json file our results!")
+  return df

@@ -10,7 +10,7 @@ import numpy as np
 def main():
     directory = "Dataset/train"
     test_dir = "Dataset/test"
-    rename_all("Dataset/train")
+    rename_all(directory)
     augment(target_dir=directory)
     check_train(target_dir=directory)
     create_test_set(ex_target_dir=directory, new_test_dir=test_dir, sample=0.2)
