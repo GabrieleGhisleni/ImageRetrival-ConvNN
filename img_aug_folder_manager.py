@@ -5,14 +5,31 @@ from tqdm import tqdm
 import os
 import numpy as np
 
+
+
 def main():
     directory = "Dataset/train"
     test_dir = "Dataset/test"
+    rename_all("Dataset/train")
     augment(target_dir=directory)
     check_train(target_dir=directory)
     create_test_set(ex_target_dir=directory, new_test_dir=test_dir, sample=0.2)
     check_test(ex_dir_test=test_dir)
     check_all(directory, test_dir)
+
+
+
+def rename_all(target_dir):
+    i=1
+    print("Renaming the files:")
+    for path in tqdm(os.listdir(target_dir)):
+        for root, _, files in os.walk(target_dir +"/" + path + "/"):
+            for file in files:
+                image_file = root + file
+                index= image_file.find(".jpg")
+                new_name = root+"class_"+str(path)+"_images_number_"+str(i)+image_file[index:]
+                os.rename(image_file, new_name)
+                i+=1
 
 def augment(target_dir:str)->None:
     """

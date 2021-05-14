@@ -14,7 +14,6 @@ if __name__ == "__main__":
     ic = ImageClassifier(batch_size=32, epochs=1)
     ic.train(train, test, model,path_to_save_the_model="trained_models")
 
-
   query_path = "Validation/query"
   gallery_path = "Validation/gallery"
   resnet_18_path = "trained_models/resnet_18.tth"
