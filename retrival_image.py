@@ -33,43 +33,70 @@ class RetrivalImage():
         layer=self.model._modules.get("model")._modules.get('avgpool')
         return  layer
 
+def from_one_to_three_channel(path):
+  r = cv2.imread(path,0)
+  b = cv2.imread(path,0)
+  g = cv2.imread(path,0)
+  img = cv2.merge((r,b,g))
+  img = cv2.merge((r,b,g))
+  img = Image.fromarray(img, 'RGB')
+  return img
+
 def get_query_vector(model, query_path):
-  print("Converting query_vector images to feature vectors")
+  extracted = 0
   query_vector = {}
   for root, _, files in os.walk(query_path):
     for file in files:
       I = Image.open(os.path.join(query_path+"/"+file))
-      if I.mode != 'L':
+      if I.mode != 'L': #RuntimeError: output with shape [1, 224, 224] doesn't match the broadcast shape [3, 224, 224]
         vec = model.getVec(I)
         query_vector[file] = vec
+        extracted+=1
         I.close()
       else:
+        tmp_ = os.path.join(query_path+"/"+file)
+        print(f"Founded GrayScale image at {tmp_}, converted into RGB")
+        I =from_one_to_three_channel(os.path.join(query_path+"/"+file))
+        vec = model.getVec(I)
+        query_vector[file] = vec
+        extracted+=1
         I.close()
+    print(f"Finded {len(files)} in the query path, extracted {extracted} images")
     return query_vector
 
 def get_gallery_vector(model, gallery_path):
-    print("Converting gallery_vector images to feature vectors")
-    gallery_vector = {}
-    for root, _, files in os.walk(gallery_path):
-      for file in files:
-        I = Image.open(os.path.join(gallery_path+"/"+file))
-        if I.mode != 'L':
-          vec = model.getVec(I)
-          gallery_vector[file] = vec
-          I.close()
-        else:
-          I.close()
-    return gallery_vector
+  extracted= 0
+  gallery_vector = {}
+  for root, _, files in os.walk(gallery_path):
+    for file in files:
+      I = Image.open(os.path.join(gallery_path+"/"+file))
+      if I.mode != 'L': #RuntimeError: output with shape [1, 224, 224] doesn't match the broadcast shape [3, 224, 224]
+        vec = model.getVec(I)
+        gallery_vector[file] = vec
+        extracted+=1
+        I.close()
+      else:
+        tmp_ = os.path.join(gallery_path+"/"+file)
+        print(f"Founded GrayScale image at {tmp_}, converted into RGB")
+        I =from_one_to_three_channel(os.path.join(gallery_path+"/"+file))
+        vec = model.getVec(I)
+        gallery_vector[file] = vec
+        extracted+=1
+        I.close()
+  print(f"Finded {len(files)} in the gallery path, extracted {(extracted)} images")
+  return gallery_vector
 
 def getSimilarityMatrix(query_vector, gallery_vector, K):
   ret = []
   gallery_keys= list(gallery_vector.keys())
   names= {0:'name'}
   i=1
+  print(f"We found  {len(query_vector)} query images and {len(gallery_keys)} gallery images")
   for igallery in (gallery_keys):
     names[i]=igallery
     i+=1
-  for k in tqdm(query_vector):
+
+  for k in (query_vector):
     x1 = torch.Tensor(query_vector[k]).unsqueeze(0)
     tmp = {k:{}}
     l= [k]
@@ -87,4 +114,6 @@ def getSimilarityMatrix(query_vector, gallery_vector, K):
       kSimilar = df.iloc[j, :].sort_values(ascending = False).head(K)
       df_name.iloc[j, :] = list(kSimilar.index)
       df_value.iloc[j, :] = kSimilar.values
+  print(f"""\nThe final matrix has shape {df_name.shape}, and double check {df_value.shape}
+  Also remember that the number of columns cannot be higher than K ----> Now is: {K}""")
   return (df_name, df_value)
