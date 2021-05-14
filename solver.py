@@ -92,7 +92,7 @@ class ImageClassifier():
           loss = sum(total_loss)/len(total_loss)
           eq = torch.eq(test_labels, test_preds).sum()
           test_accuracy = (eq/test_labels.shape[0]) * 100
-          if test_accuracy > best_accuracy:
+          if test_accuracy >= best_accuracy:
               best_accuracy = test_accuracy
               torch.save({'epoch': e,'model_state_dict': model.state_dict(),'optimizer_state_dict': optimizer.state_dict(), 'loss': loss},
               path_to_save_the_model +"/"+"resnet_18.tth")

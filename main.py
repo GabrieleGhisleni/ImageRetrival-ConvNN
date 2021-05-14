@@ -5,7 +5,7 @@ from retrival_image import *
 
 
 if __name__ == "__main__":
-  retrain = False
+  retrain = True
   if retrain:
     train_dir = "Dataset/train"
     test_dir = "Dataset/test"
