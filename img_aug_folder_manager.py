@@ -2,25 +2,31 @@ from image_augmentation_functions import *
 import shutil
 import random as rd
 from tqdm import tqdm
-import os
+import os,time
 import numpy as np
 
 
 
 def main():
-    directory = "Dataset/train"
-    test_dir = "Dataset/test"
+    directory = "Dataset_small_test/train"
+    test_dir = "Dataset_small_test/test"
     rename_all(directory)
-    augment(target_dir=directory)
     check_train(target_dir=directory)
-    create_test_set(ex_target_dir=directory, new_test_dir=test_dir, sample=0.2)
-    check_test(ex_dir_test=test_dir)
-    check_all(directory, test_dir)
+    already_done_rename_all = False # set to true after the first run and check if all was good!
+    if already_done_rename_all:
+        create_test_set(ex_target_dir=directory, new_test_dir=test_dir, min_train=10)
+        augment(target_dir=directory)
+        check_test(ex_dir_test=test_dir)
+        check_all(directory, test_dir)
 
 
 
 def rename_all(target_dir):
-    i=1
+    """
+    Rename all the files in the folder.
+    if launch multiple times create problem so be care!
+    """
+    i,error, names=1,0, []
     print("Renaming the files:")
     for path in tqdm(os.listdir(target_dir)):
         for root, _, files in os.walk(target_dir +"/" + path + "/"):
@@ -28,8 +34,16 @@ def rename_all(target_dir):
                 image_file = root + file
                 index= image_file.find(".jpg")
                 new_name = root+"class_"+str(path)+"_images_number_"+str(i)+image_file[index:]
-                os.rename(image_file, new_name)
+                try:
+                    os.rename(image_file, new_name)
+                except Exception:
+                    if "class_" not in image_file:
+                        error+=1
+                        names += path
+                    pass
                 i+=1
+
+    print(f"total error {error}, look in classes: {names}")
 
 def augment(target_dir:str)->None:
     """
@@ -46,13 +60,17 @@ def augment(target_dir:str)->None:
         for root, _, files in os.walk(target_dir +"/" + path + "/"):
             Folder_name = target_dir +"/" + path + "/"
             print(f"\n Working on folder: {Folder_name}")
-            for file in files:
-                    image_file = root + file
-                    image = cv2.imread(image_file)
-                    first_block(image, target_folder=Folder_name)
-                    second_block(image, Target_folder=Folder_name)
-                    third_block(image, Target_folder=Folder_name)
-                    cv2.imwrite(Folder_name + "/original" + ".jpg", image)
+            if len(files)< 100:
+                for file in files:
+                    try:
+                        image_file = root + file
+                        image = cv2.imread(image_file)
+                        first_block(image, target_folder=Folder_name)
+                        second_block(image, Target_folder=Folder_name)
+                        third_block(image, Target_folder=Folder_name)
+                        cv2.imwrite(Folder_name + "/original" + ".jpg", image)
+                    except Exception as e:
+                        print(f"Failure {e}\n in the class {path}, image {file}")
             tot_after += len(os.listdir(Folder_name))
     print(f"From {tot_before} images -----> to {tot_after} images")
 
@@ -71,23 +89,44 @@ def check_train(target_dir:str)->None:
     print(f"Min image in class: --> {min}")
     print(f"Max image in class: --> {max}")
 
-def create_test_set(ex_target_dir:str, new_test_dir:str, sample:float=0.3)->None:
-      try:
+def tmp_transfer(old_dir, new_dir):
+    for path in (os.listdir(new_dir)):
+        for root, _, files in os.walk(new_dir + "/" + path + "/"):
+            for file in files:
+                original = new_dir + "/" + path + "/" + file
+                target = old_dir + "/" + path + "/" + file
+                shutil.move(original, target)
+
+def create_test_set(ex_target_dir:str, new_test_dir:str, sample:float=None, min_train:int=10):
+    """
+    min_train is used to have that number in the training and all the others are moved to the test set
+    sample instead is used as a float if we want to move a % of the images from trainin to test
+    sample used as a int if we want to move a integer number of images from train to test
+    """
+    try:
         os.mkdir(new_test_dir)
-      except:
+    except:
         print("folder already created")
-      for path in (os.listdir(ex_target_dir)):
-          for root, _, files in os.walk(ex_target_dir +"/" + path + "/"):
-              try:
-                  os.mkdir(new_test_dir +"/" + path)
-              except:
-                  pass
-              l = int(len(files) * sample)
-              randomlist = rd.sample(range(0, len(files)), l)
-              for ifile in randomlist:
-                  original = ex_target_dir +"/" + path + "/" + files[ifile]
-                  target = new_test_dir +  "/"  + path + "/" + files[ifile]
-                  shutil.move(original, target)
+    for path in (os.listdir(ex_target_dir)):
+        for root, _, files in os.walk(ex_target_dir + "/" + path + "/"):
+            try:
+                os.mkdir(new_test_dir + "/" + path)
+            except:
+                pass
+            if type(sample) == int:
+                randomlist = rd.sample(range(0, len(files)), sample)
+            elif type(sample) == float:
+                l = int(len(files) * sample)
+                randomlist = rd.sample(range(0, len(files)), l)
+            elif min_train != None:
+                l = len(files) - 10
+                randomlist = rd.sample(range(0, len(files)), l)
+                print(randomlist)
+            for ifile in randomlist:
+                original = ex_target_dir + "/" + path + "/" + files[ifile]
+                target = new_test_dir + "/" + path + "/" + files[ifile]
+                shutil.move(original, target)
+
 
 def check_test(ex_dir_test):
     for path in (os.listdir(ex_dir_test+"/")):
