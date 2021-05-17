@@ -10,7 +10,9 @@ import numpy as np
 def main():
     directory = "Dataset_small_test/train"
     test_dir = "Dataset_small_test/test"
-    rename_all(directory)
+    #augment(target_dir=directory)
+
+    #rename_all(directory)
     check_train(target_dir=directory)
     already_done_rename_all = False # set to true after the first run and check if all was good!
     if already_done_rename_all:
@@ -57,17 +59,24 @@ def augment(target_dir:str)->None:
     tot_after = 0
     for path in tqdm(os.listdir(target_dir)):
         tot_before += len(os.listdir(target_dir))
-        for root, _, files in os.walk(target_dir +"/" + path + "/"):
-            Folder_name = target_dir +"/" + path + "/"
+        for root, _, files in os.walk(target_dir + "/" + path + "/"):
+            i = 0
+            Folder_name = target_dir + "/" + path + "/"
             print(f"\n Working on folder: {Folder_name}")
             if len(files)< 100:
                 for file in files:
                     try:
                         image_file = root + file
                         image = cv2.imread(image_file)
-                        first_block(image, target_folder=Folder_name)
-                        second_block(image, Target_folder=Folder_name)
-                        third_block(image, Target_folder=Folder_name)
+                        if i==0:
+                            first_block(image, target_folder=Folder_name)
+                            i+= 1
+                        elif i==1:
+                            i+=1
+                            second_block(image, Target_folder=Folder_name)
+                        else:
+                            third_block(image, Target_folder=Folder_name)
+                            i=0
                         cv2.imwrite(Folder_name + "/original" + ".jpg", image)
                     except Exception as e:
                         print(f"Failure {e}\n in the class {path}, image {file}")
