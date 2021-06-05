@@ -8,20 +8,18 @@ import numpy as np
 
 
 def main():
-    directory = "Dataset_small_test/train"
-    test_dir = "Dataset_small_test/test"
-    #augment(target_dir=directory)
-
-    #rename_all(directory)
-    check_train(target_dir=directory)
+    directory = "Dataset/train"
+    test_dir = "Dataset/test"
+    tmp_transfer(new_dir=directory, old_dir= test_dir)
+    augment(target_dir=directory)
+    rename_all(directory)
+    check_train(target_dir=test_dir)
     already_done_rename_all = False # set to true after the first run and check if all was good!
     if already_done_rename_all:
         create_test_set(ex_target_dir=directory, new_test_dir=test_dir, min_train=10)
         augment(target_dir=directory)
         check_test(ex_dir_test=test_dir)
         check_all(directory, test_dir)
-
-
 
 def rename_all(target_dir):
     """
@@ -35,7 +33,7 @@ def rename_all(target_dir):
             for file in files:
                 image_file = root + file
                 index= image_file.find(".jpg")
-                new_name = root+"class_"+str(path)+"_images_number_"+str(i)+image_file[index:]
+                new_name = root+"class_"+str(path)+"_images_number_"+str(i)+".jpg"
                 try:
                     os.rename(image_file, new_name)
                 except Exception:
@@ -104,7 +102,11 @@ def tmp_transfer(old_dir, new_dir):
             for file in files:
                 original = new_dir + "/" + path + "/" + file
                 target = old_dir + "/" + path + "/" + file
-                shutil.move(original, target)
+                try:
+                    shutil.move(original, target)
+                except Exception as e:
+                    print(f"Original: {original}, target: {target}")
+                    print(f"Error at {original, e}")
 
 def create_test_set(ex_target_dir:str, new_test_dir:str, sample:float=None, min_train:int=10):
     """

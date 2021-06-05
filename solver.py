@@ -7,13 +7,13 @@ import numpy as np
 from tqdm import tqdm
 import json
 
-def activate_last(model):
-    for name, param in model.named_parameters():
-        if not name == 'fc':
-            param.requires_grad = False
-        else:
-            param.requires_grad = True
-            print(f'--> Finetuning {name:s} ')
+def activate_last_ours(model):
+  for name, param in model.named_parameters():
+    if  "fc" in name and 'bias' not in name:
+        param.requires_grad = True
+        print(f'--> Finetuning {name:s} ')
+    else:
+        param.requires_grad = False
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -56,8 +56,9 @@ class ImageClassifier():
       best_accuracy = 0.0
       for e in tqdm(range(self.epochs)):
           # we activate dropout, BN params
-          #activate_last(model)  ################# ACTIVATE LAST ###################
-          model.train()  ################# ACTIVATE LAST ###################
+          #activate_last_ours(model)  you can activate just the last layer decommenting this line
+          # and commenting the one below
+          model.train()
           ## Iteration
           for i, batch in (enumerate(training_loader)):
               data, labels = batch
@@ -96,7 +97,7 @@ class ImageClassifier():
           if test_accuracy >= best_accuracy:
               best_accuracy = test_accuracy
               torch.save({'epoch': e,'model_state_dict': model.state_dict(),'optimizer_state_dict': optimizer.state_dict(), 'loss': loss},
-              path_to_save_the_model +"/"+"resnet_18.tth")
+              path_to_save_the_model +"/"+"resnet_18.tth") #change the path according to the model that you are training!
           print('End of Epoch {0}/{1:03} -> loss: {2:0.05}, test accuracy: {3:0.03} - best accuracy: {4:0.03}'.format(
                       e + 1, self.epochs,
                       loss.numpy(),
@@ -104,52 +105,57 @@ class ImageClassifier():
                       best_accuracy))
           print(f"Total error captured: {total_error}")
 
-
-
-def top_k_accuracy(result):
-  """
-  Works only if you rename the images before and are named as img (1).jpg, img (2).jpg
-  """
-  tot, top_1, top_3, top_5, top_10,no_match = len(result),0,0,0,0,0
-  for keys in result:
-    name = keys.split("(")[0].strip()
-    flag = True
-    for value in range(len(result[keys])):
-      name_v = result[keys][value].split("(")[0].strip()
-      if flag:
-        if name == name_v and value == 1:
-          top_1+=1
-          top_3+=1
-          top_5+=1
-          top_10+=1
-          flag=False
-        elif name == name_v and value > 1 and value <=3:
-          top_3+=1
-          top_5+=1
-          top_10+=1
-          flag=False
-        elif name == name_v and value > 3 and value <=5:
-          top_5+=1
-          top_10+=1
-          flag=False
-        elif name == name_v and value > 5:
-          top_10+=1
-          flag=False
-        if value == 9 and flag:
-          no_match+=1
-  print(f"""
-  top_1: {(top_1)/tot} --> top_3: {(top_3)/tot} --> top_5: {(top_5)/tot} --> top_10: {(top_10)/tot}
-  class with no matches in the list: {no_match}
-  check if top_10 is right (1- no_match/total_len) {1- (no_match/len(result))}
-  """)
-
-
-def obtain_result(dataframe, dump=False):
+def obtain_result(dataframe,name_path, similarity):
+  res = {}
   df = {}
   for i in range(len(dataframe)):
     df[dataframe.index[i]] = list(dataframe.iloc[i].values)
-  if dump:
-      with open('result.json', 'w') as fp:
-          json.dump(df, fp, indent=4)
-          print(f"Dumped into the result.json file our results!")
-  return df
+  res["groupname"] = "Data Pirates"
+  res["images"] = df
+  nm = name_path.split(".")[0]
+  with open("Validation/Results/result-last-"+nm+"-"+similarity+".json", 'w') as fp:
+    json.dump(res, fp, indent=4)
+    print(f"Dumped into the result-last-{nm}-{similarity}.json !")
+  return res
+
+def top_k_accuracy(result):
+    """
+    Works only if the image are called as '<nameofcategory> (1).jpg', '<nameofcategory> (2).jpg'
+    and so on.
+    """
+    no_matched = set()
+    tot, top_1, top_3, top_5, top_10,no_match = len(result),0,0,0,0,0
+    for keys in result:
+      name = keys.split("(")[0].strip()
+      tmp = keys
+      flag = True
+      for value in range(len(result[keys])):
+        name_v = result[keys][value].split("(")[0].strip()
+        if "_q" in name: name = name.split("_q")[0]
+        if flag:
+          if name == name_v and value == 1:
+            top_1+=1
+            top_3+=1
+            top_5+=1
+            top_10+=1
+            flag=False
+          elif name == name_v and value > 1 and value <=3:
+            top_3+=1
+            top_5+=1
+            top_10+=1
+            flag=False
+          elif name == name_v and value > 3 and value <=5:
+            top_5+=1
+            top_10+=1
+            flag=False
+          elif name == name_v and value > 5:
+            top_10+=1
+            flag=False
+          if value == 9 and flag:
+            no_match+=1
+            no_matched.add(tmp)
+    top_1 = np.round(top_1/tot,3)
+    top_3 = np.round(top_3/tot,3)
+    top_10 = np.round(top_10/tot,3)
+    return dict(top_1= top_1, top_3 = top_3, top_10 =top_10)
+

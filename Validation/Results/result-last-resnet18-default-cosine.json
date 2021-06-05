@@ -1,0 +1,125 @@
+{
+    "groupname": "Data Pirates",
+    "images": {
+        "4_prof_q (5).jpg": [
+            "4_prof (10).jpg",
+            "4_prof (9).jpg",
+            "4_prof (6).jpg",
+            "4_prof (7).jpg",
+            "4_prof (8).jpg",
+            "DISTRACTOR_FAIL (9).jpg",
+            "oropa (4).jpg",
+            "monte_lussari (6).jpg",
+            "pavia (5).jpg",
+            "DISTRACTOR_FAIL (110).jpg"
+        ],
+        "6_prof_q (4).jpg": [
+            "9_prof (4).jpg",
+            "oropa (4).jpg",
+            "duomo_di_trento (20).jpg",
+            "18_prof (13).jpg",
+            "stazione_bg (2).jpg",
+            "oropa (3).jpg",
+            "DISTRACTOR_FAIL (48).jpg",
+            "duomo_udine (3).jpg",
+            "16_prof (7).jpg",
+            "DISTRACTOR_FAIL (252).jpg"
+        ],
+        "6_prof_q (5).jpg": [
+            "DISTRACTOR_FAIL (252).jpg",
+            "oropa (4).jpg",
+            "DISTRACTOR_FAIL (48).jpg",
+            "DISTRACTOR_FAIL (268).jpg",
+            "stazione_bg (2).jpg",
+            "DISTRACTOR_FAIL (9).jpg",
+            "oropa (3).jpg",
+            "DISTRACTOR_FAIL (69).jpg",
+            "18_prof (13).jpg",
+            "duomo_di_trento (20).jpg"
+        ],
+        "7_prof_q (1).jpg": [
+            "7_prof (9).jpg",
+            "7_prof (10).jpg",
+            "7_prof (8).jpg",
+            "DISTRACTOR_FAIL (109).jpg",
+            "DISTRACTOR_FAIL (29).jpg",
+            "monte_lussari (6).jpg",
+            "pavia (5).jpg",
+            "duomo_di_trento (21).jpg",
+            "9_prof (5).jpg",
+            "DISTRACTOR_FAIL (339).jpg"
+        ],
+        "7_prof_q (2).jpg": [
+            "7_prof (8).jpg",
+            "7_prof (9).jpg",
+            "7_prof (10).jpg",
+            "monte_lussari (6).jpg",
+            "miramare (2).jpg",
+            "DISTRACTOR_FAIL (29).jpg",
+            "DISTRACTOR_FAIL (109).jpg",
+            "DISTRACTOR_FAIL (339).jpg",
+            "duomo_di_trento (21).jpg",
+            "pavia (5).jpg"
+        ],
+        "pavia (1).jpg": [
+            "pavia (4).jpg",
+            "13_prof (6).jpg",
+            "pavia (5).jpg",
+            "13_prof (7).jpg",
+            "duomo_udine (2).jpg",
+            "13_prof (9).jpg",
+            "13_prof (5).jpg",
+            "duomo_di_trento (18).jpg",
+            "duomo_udine (3).jpg",
+            "13_prof (8).jpg"
+        ],
+        "pavia (2).jpg": [
+            "pavia (4).jpg",
+            "duomo_di_trento (18).jpg",
+            "13_prof (6).jpg",
+            "pavia (5).jpg",
+            "duomo_di_trento (21).jpg",
+            "duomo_udine (2).jpg",
+            "9_prof (5).jpg",
+            "9_prof (4).jpg",
+            "7_prof (10).jpg",
+            "DISTRACTOR_FAIL (339).jpg"
+        ],
+        "pavia (3).jpg": [
+            "pavia (5).jpg",
+            "duomo_udine (2).jpg",
+            "pavia (4).jpg",
+            "9_prof (4).jpg",
+            "duomo_di_trento (18).jpg",
+            "duomo_di_trento (21).jpg",
+            "7_prof (10).jpg",
+            "13_prof (6).jpg",
+            "oropa (3).jpg",
+            "9_prof (5).jpg"
+        ],
+        "stazione_bg (5).jpg": [
+            "stazione_bg (3).jpg",
+            "stazione_bg (1).jpg",
+            "9_prof (4).jpg",
+            "16_prof (4).jpg",
+            "stazione_bg (2).jpg",
+            "13_prof (7).jpg",
+            "duomo_udine (2).jpg",
+            "9_prof (5).jpg",
+            "duomo_udine (3).jpg",
+            "13_prof (6).jpg"
+        ],
+        "stazione_bg (6).jpg": [
+            "stazione_bg (1).jpg",
+            "stazione_bg (3).jpg",
+            "stazione_bg (4).jpg",
+            "9_prof (4).jpg",
+            "16_prof (4).jpg",
+            "pavia (5).jpg",
+            "stazione_bg (2).jpg",
+            "oropa (3).jpg",
+            "duomo_udine (2).jpg",
+            "9_prof (5).jpg"
+        ]
+    }
+}

@@ -1,16 +1,20 @@
-import torch
+import torch,json
 from tqdm import tqdm
 from torchvision import models
-import os
+import os, cv2
 from PIL import Image
 from torchvision import transforms
 import pandas as pd
 import torch.nn.functional as F
+from scipy.spatial import distance
+import numpy as np
 
 class RetrivalImage():
-    def __init__(self,model):
+    def __init__(self,model, resnet=18):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.numberFeatures = 512
+        if resnet==18: self.numberFeatures = 512
+        if resnet==50: self.numberFeatures = 2048
+        if resnet == "google": self.numberFeatures = 1024
         self.model=model
         self.model.eval()
         self.featureLayer = self.getFeatureLayer()
@@ -23,8 +27,9 @@ class RetrivalImage():
     def getVec(self, img):
         image = self.pre_process(img).unsqueeze(0).to(self.device)
         embedding = torch.zeros(1, self.numberFeatures, 1, 1)
-        def copyData(m, i, o): embedding.copy_(o.data)
-        h = self.featureLayer.register_forward_hook(copyData)
+        def backup(m, i, original):
+          embedding.copy_(original.data)
+        h = self.featureLayer.register_forward_hook(backup)
         self.model(image)
         h.remove()
         return embedding.numpy()[0, :, 0, 0]
@@ -86,34 +91,45 @@ def get_gallery_vector(model, gallery_path):
   print(f"Finded {len(files)} in the gallery path, extracted {(extracted)} images")
   return gallery_vector
 
-def getSimilarityMatrix(query_vector, gallery_vector, K):
-  ret = []
-  gallery_keys= list(gallery_vector.keys())
-  names= {0:'name'}
-  i=1
-  print(f"We found  {len(query_vector)} query images and {len(gallery_keys)} gallery images")
-  for igallery in (gallery_keys):
-    names[i]=igallery
-    i+=1
 
-  for k in (query_vector):
-    x1 = torch.Tensor(query_vector[k]).unsqueeze(0)
-    tmp = {k:{}}
-    l= [k]
-    for q in gallery_keys:
-      x2 = torch.Tensor(gallery_vector[q]).unsqueeze(0)
-      distanza= F.cosine_similarity(x1, x2, dim=1, eps=1e-8)
-      l.append(distanza.tolist()[0])
-    df=(pd.DataFrame(l).transpose())
-    df.rename(columns=names, inplace=True)
-    ret.append(df)
-  df = pd.concat(ret).set_index("name", drop=True)
-  df_name = pd.DataFrame(index = df.index, columns = range(K))
-  df_value = pd.DataFrame(index = df.index, columns = range(K))
-  for j in (range(len(df))):
-      kSimilar = df.iloc[j, :].sort_values(ascending = False).head(K)
-      df_name.iloc[j, :] = list(kSimilar.index)
-      df_value.iloc[j, :] = kSimilar.values
-  print(f"""\nThe final matrix has shape {df_name.shape}, and double check {df_value.shape}
-  Also remember that the number of columns cannot be higher than K ----> Now is: {K}""")
-  return (df_name, df_value)
+def getSimilarityMatrix(query_vector, gallery_vector, K, similarity):
+    ret = []
+    gallery_keys = list(gallery_vector.keys())
+    names = {0: 'name'}
+    i = 1
+    # print(f"We found  {len(query_vector)} query images and {len(gallery_keys)} gallery images")
+    for igallery in (gallery_keys):
+        names[i] = igallery
+        i += 1
+
+    for k in (query_vector):
+        x1 = torch.Tensor(query_vector[k]).unsqueeze(0)
+        tmp = {k: {}}
+        l = [k]
+        for q in gallery_keys:
+            x2 = torch.Tensor(gallery_vector[q]).unsqueeze(0)
+            if similarity == "cosine":
+                distanza = F.cosine_similarity(x1, x2, dim=1, eps=1e-8)
+                l.append(distanza.tolist()[0])
+            elif similarity == "l1":
+                distanza = distance.cityblock(x1, x2)
+                l.append(distanza.tolist())
+            elif similarity == "eu":
+                distanza = distance.euclidean(x1, x2)
+                l.append(distanza.tolist())
+            elif similarity == "mk":
+                distanza = distance.minkowski(x1, x2, 1)
+                l.append(distanza.tolist())
+
+        df = (pd.DataFrame(l).transpose())
+        df.rename(columns=names, inplace=True)
+        ret.append(df)
+    df = pd.concat(ret).set_index("name", drop=True)
+    df_name = pd.DataFrame(index=df.index, columns=range(K))
+    df_value = pd.DataFrame(index=df.index, columns=range(K))
+    for j in (range(len(df))):
+        kSimilar = df.iloc[j, :].sort_values(ascending=False).head(K)
+        df_name.iloc[j, :] = list(kSimilar.index)
+        df_value.iloc[j, :] = kSimilar.values
+    return (df_name, df_value)
+
