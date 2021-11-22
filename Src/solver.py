@@ -110,7 +110,7 @@ def obtain_result(dataframe,name_path, similarity):
   res["groupname"] = "Data Pirates"
   res["images"] = df
   nm = name_path.split(".")[0]
-  with open("Validation/Results/result-last-"+nm+"-"+similarity+".json", 'w') as fp:
+  with open("validation/Results/result-last-"+nm+"-"+similarity+".json", 'w') as fp:
     json.dump(res, fp, indent=4)
     print(f"Dumped into the result-last-{nm}-{similarity}.json !")
   return res

@@ -8,8 +8,8 @@ import numpy as np
 
 
 def main():
-    directory = "Dataset/train"
-    test_dir = "Dataset/test"
+    directory = "dataset/train"
+    test_dir = "dataset/test"
     tmp_transfer(new_dir=directory, old_dir= test_dir)
     augment(target_dir=directory)
     rename_all(directory)

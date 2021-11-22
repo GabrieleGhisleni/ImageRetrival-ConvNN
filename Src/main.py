@@ -6,8 +6,8 @@ from typing import List
 
 
 def main():
-  query_path = "Validation/query"
-  gallery_path = "Validation/gallery"
+  query_path = "validation/query"
+  gallery_path = "validation/gallery"
   models_path = os.listdir("Models")
   results = run_all(models_path, gallery_path, query_path)
   pprint(results)
